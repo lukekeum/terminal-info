@@ -13,24 +13,33 @@ type Ctx = {
   history: string[];
 };
 
+const siteHost = new URL(site.url).host;
+const profileLinks = Object.values(site.links);
+
 const initialLine: Line[] = [
   {
     id: 0,
     kind: "output",
-    text: "안녕하세요! 저의 작업공간에 오신걸 환영합니다.\n\n\tKeum Jungbin - Backend Developer\n\tSite: lukekeum.me\n\tGithub: lukekeum\n\tLinkedIn: jungbinkeum0222\n\tContactMe: lukekeum11@gmail.com\n\n'help'을 입력하면 할 수 있는 일들이 나올거에요.",
+    text: [
+      "안녕하세요! 저의 작업공간에 오신걸 환영합니다.",
+      site.temporaryNotice,
+      "",
+      `\t${site.name} - ${site.role}`,
+      `\tSite: ${siteHost}`,
+      ...profileLinks.map((link) => `\t${link.label}: ${link.handle}`),
+      `\tContactMe: ${site.email}`,
+      "",
+      "'help'을 입력하면 할 수 있는 일들이 나올거에요.",
+    ].join("\n"),
   },
 ];
 
-const description =
-  "성균관대학교 개발 동아리 SKKUDING에서 백엔드 개발을 맡고 있습니다. 작업물과 그 뒤의 이야기를 정리해 곧 공개할 예정이니, 그동안 궁금한 점이 있다면 편하게 연락 주세요.";
-
 const contactLines = [
-  "Github: https://github.com/lukekeum",
-  "LinkedIn: https://www.linkedin.com/in/jungbinkeum0222",
-  "Email: lukekeum11@gmail.com",
-].concat("\n");
+  ...profileLinks.map((link) => `${link.label}: ${link.href}`),
+  `Email: ${site.email}`,
+].join("\n");
 
-const PROMPT = "guest@lukekeum:~$";
+const PROMPT = `guest@${site.handle}:~$`;
 
 const commands: Record<
   string,
@@ -57,7 +66,7 @@ const commands: Record<
   whoami: {
     hint: "자기소개",
     run: () =>
-      `금정빈(Keum Jungbin) \n성균관대학교 SKKUDING 동아리 백엔드 개발자 | 부회장`,
+      `${site.nameKo}(${site.name})\n${site.organization.name} ${site.roleKo} | ${site.organization.position}`,
   },
   ls: {
     hint: "파일 목록",
@@ -72,7 +81,7 @@ const commands: Record<
     run: (args) => {
       const file = args[0];
       if (!file) return "cat: 읽을 파일을 적어봐요. 예) cat about.md";
-      if (file === "about.md") return description;
+      if (file === "about.md") return site.description;
       if (file === "contact.txt") return contactLines;
       if (file.startsWith("projects"))
         return `cat: ${file}: 디렉터리입니다. (그리고 비어 있어요)`;
@@ -87,24 +96,24 @@ const commands: Record<
   },
   contact: { hint: "연락처", run: () => contactLines },
   github: {
-    hint: "GitHub 열기",
+    hint: `${site.links.github.label} 열기`,
     run: (_, ctx) => {
-      ctx.open(site.links[0].href);
-      return `Opening ${site.links[0].href} …`;
+      ctx.open(site.links.github.href);
+      return `Opening ${site.links.github.href} …`;
     },
   },
   linkedin: {
-    hint: "LinkedIn 열기",
+    hint: `${site.links.linkedin.label} 열기`,
     run: (_, ctx) => {
-      ctx.open(site.links[1].href);
-      return `Opening ${site.links[1].href} …`;
+      ctx.open(site.links.linkedin.href);
+      return `Opening ${site.links.linkedin.href} …`;
     },
   },
   curl: {
     run: (args) => {
       const target = args.find((a) => !a.startsWith("-"));
-      if (!target) return "curl: try 'curl lukekeum.me'";
-      if (!target.includes(site.url.replace("https://", "")))
+      if (!target) return `curl: try 'curl ${siteHost}'`;
+      if (!target.includes(siteHost))
         return `curl: (6) 이 터미널은 집 밖으로 못 나갑니다: ${target}`;
       return `HTTP/1.1 503 Service Unavailable\nRetry-After: soon\nContent-Type: application/json\n\n{ "status": "building", "message": "곧 열립니다" }`;
     },
@@ -142,16 +151,17 @@ const commands: Record<
     run: () =>
       `${new Date().toLocaleString("ko-KR", { dateStyle: "long", timeStyle: "short" })}\n오픈 예정일: 커밋이 정합니다`,
   },
-  pwd: { run: () => "/home/lukekeum/portfolio (under construction)" },
+  pwd: { run: () => `/home/${site.handle}/portfolio (under construction)` },
   echo: { run: (args) => args.join(" ") },
   ping: { run: () => "PONG — 살아 있습니다. 짓는 중이라 좀 바쁠 뿐." },
   vim: { run: () => "vim에 들어오셨군요. 나가는 법은… ':q' 를 입력해 보세요." },
-  ":q": {
+  exit: {
     run: (_, ctx) => {
       ctx.close();
       return "";
     },
   },
+  ":q": { run: (args, ctx) => commands.exit.run(args, ctx) },
   history: {
     hint: "입력 기록",
     run: (_, ctx) =>
