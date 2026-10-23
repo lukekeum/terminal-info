@@ -272,7 +272,7 @@ export default function Terminal() {
             )}
           >
             {line.kind === "input" && (
-              <span className="mr-2 text-background">{PROMPT}</span>
+              <span className="mr-2 text-violet-400 font-bold">{PROMPT}</span>
             )}
             {line.text}
           </div>
@@ -281,7 +281,7 @@ export default function Terminal() {
         <div className="flex items-center">
           <label
             htmlFor="terminal-input"
-            className="mr-2 shrink-0 text-background"
+            className="mr-2 shrink-0 text-violet-400 font-bold"
           >
             {PROMPT}
           </label>
@@ -295,7 +295,7 @@ export default function Terminal() {
             autoCapitalize="none"
             autoCorrect="off"
             spellCheck={false}
-            className="min-w-0 flex-1 bg-transparent caret-current"
+            className="min-w-0 flex-1 bg-transparent outline-none"
           />
         </div>
       </div>
