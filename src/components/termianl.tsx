@@ -37,11 +37,21 @@ const commands: Record<
 > = {
   help: {
     hint: "명령어 목록",
-    run: () =>
-      Object.entries(commands)
-        .filter(([, c]) => c.hint)
-        .map(([name, c]) => `${name.padEnd(12)}${c.hint}`)
-        .join("\n") + "\n\n..목록에 없는 명령어도 몇 개 있어요 ㅎㅎ",
+    run: () => (
+      <>
+        <dl className="terminal-help">
+          {Object.entries(commands)
+            .filter(([, command]) => command.hint)
+            .map(([name, command]) => (
+              <React.Fragment key={name}>
+                <dt>{name}</dt>
+                <dd>{command.hint}</dd>
+              </React.Fragment>
+            ))}
+        </dl>
+        <p className="mt-4">..목록에 없는 명령어도 몇 개 있어요 ㅎㅎ</p>
+      </>
+    ),
   },
   whoami: {
     hint: "자기소개",
@@ -251,48 +261,42 @@ export default function Terminal() {
   };
 
   return (
-    <section
-      aria-label="터미널"
-      className="flex h-dvh w-full flex-col bg-foreground"
-    >
-      <div className="flex min-h-0 flex-1 flex-col border-b border-background/15 px-4 py-2.5 text-[11px] uppercase tracking-wider text-background/60">
-        <div
-          ref={scrollRef}
-          aria-live="polite"
-          className="min-h-0 flex-1 overflow-y-auto px-4 py-3 leading-relaxed [overflow-wrap:anywhere]"
-        >
-          {lines.map((line) => (
-            <div
-              key={line.id}
-              className={cn(
-                "whitespace-pre-wrap",
-                line.kind === "output" && "mb-2 text-background/75",
-              )}
-            >
-              {line.kind === "input" && (
-                <span className="mr-2 text-signal">{PROMPT}</span>
-              )}
-              {line.text}
-            </div>
-          ))}
-
-          <div className="flex items-center">
-            <label
-              htmlFor="terminal-input"
-              className="mr-2 shrink-0 text-signal"
-            >
-              {PROMPT}
-            </label>
-            <input
-              id="terminal-input"
-              ref={inputRef}
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              onKeyDown={onSubmitKey}
-              enterKeyHint="send"
-              className="min-w-0 flex-1 bg-transparent caret-signal outline-none"
-            />
+    <section aria-label="터미널" className="terminal">
+      <div ref={scrollRef} aria-live="polite" className="terminal-scroll">
+        {lines.map((line) => (
+          <div
+            key={line.id}
+            className={cn(
+              "whitespace-pre-wrap",
+              line.kind === "output" && "mb-2 text-background/75",
+            )}
+          >
+            {line.kind === "input" && (
+              <span className="mr-2 text-background">{PROMPT}</span>
+            )}
+            {line.text}
           </div>
+        ))}
+
+        <div className="flex items-center">
+          <label
+            htmlFor="terminal-input"
+            className="mr-2 shrink-0 text-background"
+          >
+            {PROMPT}
+          </label>
+          <input
+            id="terminal-input"
+            ref={inputRef}
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            onKeyDown={onSubmitKey}
+            enterKeyHint="send"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            className="min-w-0 flex-1 bg-transparent caret-current"
+          />
         </div>
       </div>
     </section>
