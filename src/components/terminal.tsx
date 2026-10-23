@@ -3,7 +3,13 @@
 import { site } from "@/constants/site";
 import TerminalInput from "@/components/terminal-input";
 import { cn } from "@/utils/cn";
-import React, { useEffect, useRef, useState, type ReactNode } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 
 type Line = { id: number; kind: "input" | "output"; text: ReactNode };
 type Ctx = {
@@ -188,6 +194,14 @@ export default function Terminal() {
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  const resetTerminal = useCallback(() => {
+    setLines(initialLine);
+    setValue("");
+    setHistory([]);
+    setCursor(null);
+    inputRef.current?.focus();
+  }, []);
+
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
@@ -195,6 +209,48 @@ export default function Terminal() {
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
   }, [lines]);
+
+  useEffect(() => {
+    const onInterrupt = (event: KeyboardEvent) => {
+      if (
+        event.defaultPrevented ||
+        event.isComposing ||
+        !event.ctrlKey ||
+        event.metaKey ||
+        event.altKey ||
+        event.shiftKey ||
+        event.key.toLowerCase() !== "c"
+      ) {
+        return;
+      }
+
+      const target = event.target;
+      if (
+        target !== document.body &&
+        target !== document.documentElement &&
+        !(target instanceof Node && scrollRef.current?.contains(target))
+      ) {
+        return;
+      }
+
+      const input = inputRef.current;
+      const hasInputSelection =
+        input &&
+        document.activeElement === input &&
+        input.selectionStart !== input.selectionEnd;
+
+      // Preserve native copying for both output and input selections.
+      if (hasInputSelection || window.getSelection()?.isCollapsed === false) {
+        return;
+      }
+
+      event.preventDefault();
+      resetTerminal();
+    };
+
+    document.addEventListener("keydown", onInterrupt);
+    return () => document.removeEventListener("keydown", onInterrupt);
+  }, [resetTerminal]);
 
   const execute = () => {
     const raw = value.trim();
@@ -226,8 +282,7 @@ export default function Terminal() {
       : `command not found: ${name}\n'help'를 입력해 보세요.`;
 
     if (exit) {
-      setLines(initialLine);
-      setHistory([]);
+      resetTerminal();
       return;
     }
 
