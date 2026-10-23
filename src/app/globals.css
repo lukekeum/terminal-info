@@ -133,9 +133,72 @@
     tab-size: 2;
   }
 
-  .terminal input:focus-visible {
+  .terminal-input {
+    position: relative;
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .terminal-input input {
+    display: block;
+    width: 100%;
+    border: 0;
+    padding: 0 1ch 0 0;
+    background: transparent;
+    color: inherit;
+    caret-color: currentColor;
+  }
+
+  .terminal-input input:focus {
     outline: none;
-    box-shadow: 0 1px 0 currentColor;
+    box-shadow: none;
+  }
+
+  .terminal-input-mirror {
+    position: absolute;
+    width: max-content;
+    visibility: hidden;
+    white-space: pre;
+    pointer-events: none;
+  }
+
+  .terminal-caret {
+    display: none;
+    position: absolute;
+    top: 50%;
+    height: 1.3em;
+    line-height: 1.3;
+    transform: translateY(-50%);
+    background: var(--background);
+    color: var(--foreground);
+    white-space: pre;
+    pointer-events: none;
+    animation: terminal-caret-blink 1s step-end infinite;
+  }
+
+  .terminal-input[data-custom-caret="true"] input {
+    caret-color: transparent;
+  }
+
+  .terminal-input[data-custom-caret="true"] .terminal-caret {
+    display: block;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .terminal-caret {
+      animation: none;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .terminal-input[data-custom-caret="true"] input {
+      caret-color: auto;
+    }
+
+    .terminal-input[data-custom-caret="true"] .terminal-caret {
+      display: none;
+    }
   }
 
   .terminal-help {
@@ -154,4 +217,9 @@
     min-width: 0;
     word-break: keep-all;
   }
+}
+
+@keyframes terminal-caret-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
 }

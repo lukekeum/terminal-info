@@ -1,6 +1,7 @@
 "use client";
 
 import { site } from "@/constants/site";
+import TerminalInput from "@/components/terminal-input";
 import { cn } from "@/utils/cn";
 import React, { useEffect, useRef, useState, type ReactNode } from "react";
 
@@ -285,17 +286,11 @@ export default function Terminal() {
           >
             {PROMPT}
           </label>
-          <input
-            id="terminal-input"
-            ref={inputRef}
+          <TerminalInput
+            inputRef={inputRef}
             value={value}
             onChange={(e) => setValue(e.target.value)}
             onKeyDown={onSubmitKey}
-            enterKeyHint="send"
-            autoCapitalize="none"
-            autoCorrect="off"
-            spellCheck={false}
-            className="min-w-0 flex-1 bg-transparent outline-none"
           />
         </div>
       </div>
