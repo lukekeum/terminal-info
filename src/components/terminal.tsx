@@ -77,7 +77,7 @@ const commands: Record<
     },
   },
   cat: {
-    hint: "파일 읽기 (원래 연결이지만 읽기만 해봐요)",
+    hint: "파일 읽기",
     run: (args) => {
       const file = args[0];
       if (!file) return "cat: 읽을 파일을 적어봐요. 예) cat about.md";
@@ -273,12 +273,16 @@ export default function Terminal() {
 
   return (
     <section aria-label="터미널" className="terminal">
-      <div ref={scrollRef} aria-live="polite" className="terminal-scroll">
+      <div
+        ref={scrollRef}
+        aria-live="polite"
+        className="terminal-scroll flex flex-col"
+      >
         {lines.map((line) => (
           <div
             key={line.id}
             className={cn(
-              "whitespace-pre-wrap",
+              "shrink-0 whitespace-pre-wrap",
               line.kind === "output" && "mb-2 text-background/75",
             )}
           >
@@ -289,7 +293,7 @@ export default function Terminal() {
           </div>
         ))}
 
-        <div className="flex items-center">
+        <div className="flex shrink-0 items-center">
           <label
             htmlFor="terminal-input"
             className="mr-2 shrink-0 text-violet-400 font-bold"
@@ -303,6 +307,11 @@ export default function Terminal() {
             onKeyDown={onSubmitKey}
           />
         </div>
+        <label
+          htmlFor="terminal-input"
+          aria-hidden="true"
+          className="flex-1 cursor-text"
+        />
       </div>
     </section>
   );
