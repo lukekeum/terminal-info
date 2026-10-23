@@ -1,8 +1,8 @@
-import Terminal from "@/components/termianl";
+import Terminal from "@/components/terminal";
 
 export default function Home() {
   return (
-    <div>
+    <div className="w">
       <Terminal />
     </div>
   );
